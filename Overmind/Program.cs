@@ -1,4 +1,5 @@
-﻿using Overmind.Services;
+﻿using Microsoft.Extensions.Configuration;
+using Overmind.Services;
 using System;
 using System.Drawing;
 using System.Threading;
@@ -13,6 +14,11 @@ namespace Overmind
 
         static async Task Main(string[] args)
         {
+            // Load Configuration (User Secrets)
+            IConfiguration config = new ConfigurationBuilder()
+                .AddUserSecrets<Program>()
+                .Build();
+
             Console.Title = $"Overmind - {GameName} AI Assistant";
             Console.WriteLine("🌌 Welcome to Overmind! 🌌");
             Console.WriteLine("Initializing AI systems...");
@@ -20,6 +26,8 @@ namespace Overmind
             Console.WriteLine("Press [ESC] to stop.");
 
             var captureService = new GameWindowCaptureService(GameName);
+            var aiService = new OpenAIAssistantService(config); // Load AI Service with API Key
+            var azureOCRService = new AzureOCRService(config); // Load Azure OCR Service with API Key
 
             while (!Console.KeyAvailable || Console.ReadKey(true).Key != ConsoleKey.Escape)
             {
@@ -40,7 +48,7 @@ namespace Overmind
                 Console.WriteLine($"📸 Screenshot saved: {filePath}");
 
                 // Extract text via OCR
-                string extractedText = await AzureOCRService.ExtractTextAsync(filePath);
+                string extractedText = await azureOCRService.ExtractTextAsync(filePath);
                 Console.WriteLine($"🧠 Extracted Game Data:\n{extractedText}");
 
                 if (string.IsNullOrWhiteSpace(extractedText))
@@ -52,7 +60,7 @@ namespace Overmind
 
                 // Get AI strategy advice
                 Console.WriteLine("🤖 Analyzing game state...");
-                string strategyAdvice = await OpenAIAssistantService.GetGameStrategyAdviceAsync(extractedText, GameName);
+                string strategyAdvice = await aiService.GetGameStrategyAdviceAsync(extractedText, GameName);
                 Console.WriteLine($"💡 AI Advice:\n{strategyAdvice}");
 
                 // Speak AI response

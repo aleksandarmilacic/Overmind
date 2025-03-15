@@ -3,19 +3,25 @@ using Azure;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Overmind.Services
 {
     public class AzureOCRService
-    {
-        private static readonly string Endpoint = Environment.GetEnvironmentVariable("AZURE_ENDPOINT");
-        private static readonly string Key = Environment.GetEnvironmentVariable("AZURE_KEY");
-        private static readonly DocumentAnalysisClient Client = new(new Uri(Endpoint), new AzureKeyCredential(Key));
+    { 
+        private readonly DocumentAnalysisClient _client;
 
-        public static async Task<string> ExtractTextAsync(string imagePath)
+        public AzureOCRService(IConfiguration configuration)
+        {
+            string endpoint = configuration["AZURE_OCR_ENDPOINT"];
+            string key = configuration["AZURE_OCR_KEY"];
+            _client = new DocumentAnalysisClient(new Uri(endpoint), new AzureKeyCredential(key));
+        }
+
+        public async Task<string> ExtractTextAsync(string imagePath)
         {
             using FileStream stream = new(imagePath, FileMode.Open);
-            var operation = await Client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", stream);
+            var operation = await _client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", stream);
             return string.Join("\n", operation.Value.Content);
         }
     }

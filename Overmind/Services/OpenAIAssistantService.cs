@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Extensions.Configuration;
 using Overmind.Models;
 using System;
 using System.Net.Http.Headers;
@@ -10,8 +11,18 @@ namespace Overmind.Services
 {
     public class OpenAIAssistantService
     {
-        private static readonly string OpenAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-        public static async Task<string> GetGameStrategyAdviceAsync(string extractedGameData, string gameName)
+        private readonly string _apiKey;
+        private static readonly string ApiUrl = "https://api.openai.com/v1/chat/completions";
+        private static readonly string Model = "gpt-4";
+
+        public OpenAIAssistantService(IConfiguration configuration)
+        {
+            _apiKey = configuration["OPENAI_API_KEY"]
+                      ?? throw new InvalidOperationException("Missing API Key in User Secrets.");
+        }
+
+
+        public async Task<string> GetGameStrategyAdviceAsync(string extractedGameData, string gameName)
         {
             string timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
@@ -30,11 +41,11 @@ namespace Overmind.Services
 
 
             using HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", OpenAiApiKey);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
 
             var payload = new
             {
-                model = "gpt-4",
+                model = Model,
                 messages = new[]
                 {
                     new { role = "system", content = "You are a highly intelligent AI specializing in game strategy." },
@@ -46,7 +57,7 @@ namespace Overmind.Services
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", payload);
+                HttpResponseMessage response = await client.PostAsJsonAsync(ApiUrl, payload);
                 response.EnsureSuccessStatusCode();
 
                 string result = await response.Content.ReadAsStringAsync();
