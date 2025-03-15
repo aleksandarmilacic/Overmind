@@ -9,6 +9,6 @@ namespace Overmind.Interfaces
 {
     public interface IGameWindowCapture
     {
-        Bitmap CaptureGameWindow();
+        string CaptureGameWindowAsBase64();
     }
 }

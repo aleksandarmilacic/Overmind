@@ -22,14 +22,13 @@ namespace Overmind.Services
         }
 
 
-        public async Task<string> GetGameStrategyAdviceAsync(string extractedGameData, string gameName)
+        public async Task<string> AnalyzeGameScreenshotAsync(string base64Image, string gameName)
         {
             string timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
             string prompt = $"Today is {timestamp}. You are an AI strategy advisor for the game '{gameName}'. " +
                                   "Analyze the current game state extracted from the UI and provide expert advice on what actions the player should take next.\n\n" +
-                                  "Extracted Game Data:\n" +
-                                  $"{extractedGameData}\n\n" +
+                                  "Extracted Game Data is on the image. Analyze the whole image in depth.\n" +
                                   "**Your response format must be structured as follows:**\n" +
                                   "- 📌 **Strategic Priority**: (Main focus area)\n" +
                                   "- ⚔️ **Military Advice**: (If applicable, fleet positioning, unit builds, etc.)\n" +
@@ -46,13 +45,14 @@ namespace Overmind.Services
             var payload = new
             {
                 model = Model,
-                messages = new[]
+                messages = new object[]
                 {
                     new { role = "system", content = "You are a highly intelligent AI specializing in game strategy." },
-                    new { role = "user", content = prompt }
+                    new { role = "user", content = prompt },
+                    new { type = "image_url", image_url = $"data:image/png;base64,{base64Image}" }
                 },
-                max_tokens = 500,
-                temperature = 0.9
+                max_tokens = 800,
+                temperature = 0.8
             };
 
             try
