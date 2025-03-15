@@ -32,6 +32,11 @@ namespace Overmind
 
                 // Capture screenshot as base64
                 string base64Screenshot = captureService.CaptureGameWindowAsBase64();
+                if (base64Screenshot != null)
+                {
+                    File.WriteAllBytes("test_capture.png", Convert.FromBase64String(base64Screenshot));
+                    Console.WriteLine("Saved image as test_capture.png. Check visually.");
+                }
                 if (base64Screenshot == null)
                 {
                     Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} Game window not found. Retrying...");

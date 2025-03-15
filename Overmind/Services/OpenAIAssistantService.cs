@@ -13,7 +13,7 @@ namespace Overmind.Services
     {
         private readonly string _apiKey;
         private static readonly string ApiUrl = "https://api.openai.com/v1/chat/completions";
-        private static readonly string Model = "gpt-4";
+        private static readonly string Model = "gpt-4o";
 
         public OpenAIAssistantService(IConfiguration configuration)
         {
@@ -26,51 +26,63 @@ namespace Overmind.Services
         {
             string timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
-            string prompt = $"Today is {timestamp}. You are an AI strategy advisor for the game '{gameName}'. " +
-                                  "Analyze the current game state extracted from the UI and provide expert advice on what actions the player should take next.\n\n" +
-                                  "Extracted Game Data is on the image. Analyze the whole image in depth.\n" +
-                                  "**Your response format must be structured as follows:**\n" +
-                                  "- 📌 **Strategic Priority**: (Main focus area)\n" +
-                                  "- ⚔️ **Military Advice**: (If applicable, fleet positioning, unit builds, etc.)\n" +
-                                  "- 🏗 **Economic Advice**: (Resource optimization, building strategies, etc.)\n" +
-                                  "- 🔬 **Technology Recommendations**: (Optimal research priorities)\n" +
-                                  "- 🏛 **Diplomatic Strategy**: (Rivalries, alliances, trade deals, etc.)\n" +
-                                  "- 🎭 **Miscellaneous Tips**: (Anything else that could be useful)\n\n" +
-                                  "Ensure the advice is **specific to the extracted game state** and avoids generic suggestions.";
-
-
-            using HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
-
             var payload = new
             {
                 model = Model,
-                messages = new object[]
+                messages = new[]
                 {
-                    new { role = "system", content = "You are a highly intelligent AI specializing in game strategy." },
-                    new { role = "user", content = prompt },
-                    new { type = "image_url", image_url = $"data:image/png;base64,{base64Image}" }
+                    new
+                    {
+                        role = "user",
+                        content = new object[]
+                        {
+                            new
+                            {
+                                type = "text",
+                                text = $"Today is {timestamp}. You are an expert game analyst specifically for '{gameName}'. " +
+                                 "Analyze this screenshot carefully, including UI elements, text, icons, resources, technology options, and strategic information clearly visible on the screen. " +
+                                 "Provide structured strategic advice strictly following this format:\n" +
+                                 "- 📌 **Strategic Priority**:\n" +
+                                 "- ⚔️ **Military Advice**:\n" +
+                                 "- 🏗 **Economic Advice**:\n" +
+                                 "- 🔬 **Technology Recommendations**:\n" +
+                                 "- 🏛 **Diplomatic Strategy**:\n" +
+                                 "- 🎭 **Miscellaneous Tips**:\n\n" +
+                                 "Do NOT state you can't see the image. If text is clearly visible, analyze and use it for detailed strategic recommendations."
+                            },
+                            new
+                            {
+                                type = "image_url",
+                                image_url = new
+                                {
+                                    url = $"data:image/png;base64,{base64Image}"
+                                }
+                            }
+                        }
+                    }
                 },
                 max_tokens = 800,
-                temperature = 0.8
+                temperature = 0.5
             };
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(ApiUrl, payload);
+                using HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+
+                var response = await client.PostAsJsonAsync(ApiUrl, payload);
                 response.EnsureSuccessStatusCode();
 
-                string result = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonSerializer.Deserialize<OpenAiResponse>(result, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var openAiResponse = JsonSerializer.Deserialize<OpenAiResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                string rawResponse = responseJson?.Choices?[0]?.Message?.Content ?? "No response from ChatGPT.";
-
-                return rawResponse;
+                return openAiResponse?.Choices?[0]?.Message?.Content ?? "No response from OpenAI.";
             }
             catch (Exception ex)
             {
-                return $"Error calling ChatGPT API: {ex.Message}";
+                return $"Error calling OpenAI API: {ex.Message}";
             }
         }
+
     }
 }

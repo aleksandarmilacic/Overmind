@@ -60,8 +60,7 @@ namespace Overmind.Services
             {
                 Console.WriteLine($"⚠️ Image too large ({imageBytes.Length / (1024 * 1024)}MB). Skipping.");
                 return null;
-            }
-
+            } 
             return Convert.ToBase64String(imageBytes);
         }
 
