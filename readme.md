@@ -1,10 +1,10 @@
-# ?? Overmind: AI Game Assistant
+# 🚀 Overmind: AI Game Assistant
 
 **Overmind** is an advanced AI-powered assistant designed to analyze game screenshots in real-time, providing expert strategy advice and guidance. Built specifically for complex strategy games like Stellaris, it leverages OpenAI's GPT-4 Vision to deliver detailed, actionable insights.
 
 ---
 
-## ??? Features
+## 🛠️ Features
 
 - **Real-time Screenshot Analysis:** Captures and analyzes game windows automatically.
 - **Advanced AI Insights:** Delivers structured, strategic advice covering military, economy, technology, diplomacy, and more.
@@ -13,7 +13,7 @@
 
 ---
 
-## ?? Tech Stack
+## 📦 Tech Stack
 
 - .NET 9
 - OpenAI GPT-4 Vision (GPT-4o)
@@ -23,14 +23,14 @@
 
 ---
 
-## ?? Getting Started
+## 🚩 Getting Started
 
-### ?? Requirements
+### 📌 Requirements
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [OpenAI API Key](https://platform.openai.com/api-keys)
 
-### ??? Installation
+### 🛠️ Installation
 
 Clone the repository:
 
@@ -52,7 +52,7 @@ dotnet user-secrets init
 dotnet user-secrets set "OPENAI_API_KEY" "your-openai-api-key"
 ```
 
-### ?? Running the Application
+### 🚀 Running the Application
 
 Run the application from the command line:
 
@@ -62,19 +62,19 @@ dotnet run
 
 ---
 
-## ?? Customizing
+## ⚙️ Customizing
 
 - Change the target game window by editing the `GameName` variable in `Program.cs`.
 - Adjust capture intervals and AI response settings directly within `Program.cs`.
 
 ---
 
-## ?? License
+## 📄 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## ?? Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Feel free to fork this repository, create an issue, or submit a pull request.
